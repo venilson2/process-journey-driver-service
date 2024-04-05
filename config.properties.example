@@ -1,0 +1,8 @@
+[MONGODB]
+mongodb.environment=live
+mongodb.user=8x-esystem-master-user
+mongodb.pass=14yWeuEjVLrUq7hH
+mongodb.host.local=localhost
+mongodb.name.local=8xesystem
+mongodb.host.live=cls8xs1.2d24t.mongodb.net
+mongodb.name.live=8xesystem
