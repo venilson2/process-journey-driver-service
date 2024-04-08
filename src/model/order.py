@@ -318,6 +318,16 @@ class Enterprise(CustomBaseDocument):
 
 		return json_util.dumps(data)
 
+class ParkingAddress(EmbeddedDocument):
+    formatted_address = StringField()
+    street = StringField()
+    district = StringField()
+    city = StringField()
+    state = StringField()
+    zip_code = StringField()
+    number = StringField()
+    location = PointField()
+    
 class User(CustomBaseDocument):
 	# Collection configuration
 	meta = {'collection': 'users'}
@@ -350,7 +360,9 @@ class User(CustomBaseDocument):
 	admission_at = DateTimeField()
 	resignation_at = DateTimeField()
 	app_last_login_version = StringField()
-	
+	vacation_start = DateTimeField()
+	vacation_end = DateTimeField()
+	parking_address = EmbeddedDocumentField(ParkingAddress)
 
 	def to_json(self, explode_data=True):
 		data = self.to_mongo()
@@ -360,12 +372,14 @@ class User(CustomBaseDocument):
 		if not (self.password is None):
 			del data['password']
 
-		data["created_at"] = data["created_at"].strftime("%d/%m/%Y %H:%M:%S") if "created_at" in data else None
-		data["deleted_at"] = data["deleted_at"].strftime("%d/%m/%Y %H:%M:%S") if "deleted_at" in data else None
-		data["cnh_due_date"] = data["cnh_due_date"].strftime("%d/%m/%Y") if "cnh_due_date" in data else None
-		data["inactive_at"] = data["inactive_at"].strftime("%d/%m/%Y") if "inactive_at" in data else None
+		data["created_at"] 		= data["created_at"].strftime("%d/%m/%Y %H:%M:%S") if "created_at" in data else None
+		data["deleted_at"] 		= data["deleted_at"].strftime("%d/%m/%Y %H:%M:%S") if "deleted_at" in data else None
+		data["cnh_due_date"] 	= data["cnh_due_date"].strftime("%d/%m/%Y") if "cnh_due_date" in data else None
+		data["inactive_at"] 	= data["inactive_at"].strftime("%d/%m/%Y") if "inactive_at" in data else None
 		data["admission_at"] 	= data["admission_at"].strftime("%d/%m/%Y") if "admission_at" in data else None
-		data["resignation_at"] 	= data["resignation_at"].strftime("%d/%m/%Y") if "resignation_at" in data else None
+		data["resignation_at"] 	= data["resignation_at"].strftime("%d/%m/%Y %H:%M:%S") if "resignation_at" in data else None
+		data["vacation_start"] 	= data["vacation_start"].strftime("%Y-%m-%d %H:%M:%S") if "vacation_start" in data else None
+		data["vacation_end"] 	= data["vacation_end"].strftime("%Y-%m-%d %H:%M:%S") if "vacation_end" in data else None
 
 		if not (self.subenterprises is None):
 			data['subenterprises'] = []
@@ -401,7 +415,24 @@ class User(CustomBaseDocument):
 			data['last_vehicle_driven'] = self.last_vehicle_driven.to_mongo()
 			data['last_vehicle_driven']["id"] = str(self.last_vehicle_driven.id)
 			del data['last_vehicle_driven']['_id']
+   
+		data['is_vacation'] = False
+  
+		if data["vacation_start"] and data["vacation_end"]:
+			today = datetime.datetime.now().date()
+			vacation_start_str = data["vacation_start"].split()[0]  # Remove a parte da hora
+			vacation_end_str = data["vacation_end"].split()[0]  # Remove a parte da hora
 
+			vacation_start = datetime.datetime.strptime(vacation_start_str, "%Y-%m-%d").date()
+			vacation_end = datetime.datetime.strptime(vacation_end_str, "%Y-%m-%d").date()
+
+			data['is_vacation'] = vacation_start <= today <= vacation_end
+   
+		if self.parking_address and data['parking_address']:
+			lat, lng = data['parking_address']['location']['coordinates']
+			data['parking_address']['location']['coordinates'] = {'lat': lat, 'lng': lng}
+			del data['parking_address']['location']['type']
+   
 		return json_util.dumps(data)
 
 class UserLog(CustomBaseDocument):
