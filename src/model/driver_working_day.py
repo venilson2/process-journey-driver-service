@@ -1,5 +1,14 @@
 from mongoengine import Document, EmbeddedDocument, EmbeddedDocumentField, ListField, StringField, DictField, DateTimeField, ObjectIdField
 
+class Summary(EmbeddedDocument):
+    work_time = StringField(default='00:00')
+    unproductive_time = StringField(default='00:00')
+    productive_time = StringField(default='00:00')
+    on_hold_time = StringField(default='00:00')
+    intra_day = StringField(default='00:00')
+    inter_day = StringField(default='00:00')
+    overtime = StringField(default='00:00')
+    
 class WorkingDayDetail(EmbeddedDocument):
     id = ObjectIdField(required=True)
     start_at = DateTimeField()
@@ -15,7 +24,7 @@ class WorkingDayDetail(EmbeddedDocument):
     intra_day = StringField(default='00:00')
 
 class WorkingDay(EmbeddedDocument):
-    summary = DictField()
+    summary = EmbeddedDocumentField(Summary)
     details = ListField(EmbeddedDocumentField(WorkingDayDetail))
 
 class DriverWorkingDay(Document):
