@@ -1,4 +1,5 @@
 import sys
+from src.model.driver_working_day import DriverWorkingDay
 from src.utils import DateTimeUtils
 
 class OrderService:
@@ -23,7 +24,12 @@ class OrderService:
 			raise e
 
 	def save_working_day(self, working_day):
-		print("Save working_day...")
+		try:
+			driver_working_day = DriverWorkingDay(**working_day)
+			driver_working_day.save()
+		except Exception as e:
+			print(f'Error ocurred: {str(e)} on line {sys.exc_info()[-1].tb_lineno}')
+			raise  
  
 	def process_working_day_realized(self, driver_orders):
 		try:

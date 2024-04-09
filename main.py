@@ -45,22 +45,18 @@ def main(schedule_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
    
 			driver = {
 				"driver": driver_id,
-				"working_day": {
-					"realized": {
-						"summary": working_day_realized['summary'],
-						"details": working_day_realized['details']
-     				},
-					"foreseen": {
-						"summary": working_day_foreseen['summary'],
-						"details": working_day_foreseen['details']
-     				}
+				"realized": {
+					"summary": working_day_realized['summary'],
+					"details": working_day_realized['details']
+				},
+				"foreseen": {
+					"summary": working_day_foreseen['summary'],
+					"details": working_day_foreseen['details']
 				},
 				"orders": list(map(lambda item: 
 				item['id'], 
 				driver_orders))
 			}
-			print(driver)
-			print('\n\n\n')
 			order_service.save_working_day(driver)
 
 		print("Finish application...")

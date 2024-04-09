@@ -155,10 +155,6 @@ class LineRoute(EmbeddedDocument):
 	route = ReferenceField('Route')
 	direction = StringField(choices=DIRECTION_OPTIONS)
 
-class Coordinates(EmbeddedDocument):
-	latitude = FloatField()
-	longitude = FloatField()
-
 class AddressInfo(EmbeddedDocument):
 	label = StringField()
 	zip_code = StringField()
@@ -176,83 +172,6 @@ class VehicleTypeCostItem(EmbeddedDocument):
 	value = FloatField()
 	cost_item = ReferenceField('VehicleCostItem')
 
-class TransportOverviewSummaryPublicOptions(EmbeddedDocument):
-	name = StringField()
-	color = StringField()
-	icon = StringField()
-
-class TransportOverviewSummaryPublic(EmbeddedDocument):
-	options = EmbeddedDocumentListField(TransportOverviewSummaryPublicOptions)
-
-class TransportOverviewSummaryWalking(EmbeddedDocument):
-	time = StringField()
-
-class TransportOverviewSummary(EmbeddedDocument):
-	walking = EmbeddedDocumentField(TransportOverviewSummaryWalking)
-	public = EmbeddedDocumentField(TransportOverviewSummaryPublic)
-
-class TransportOverviewPrice(EmbeddedDocument):
-	amount = StringField()
-	currency = StringField()
-	summary = StringField()
-
-class TransportTime(EmbeddedDocument):
-	startInMin = IntField()
-	start = StringField()
-	end = StringField()
-	durationInMin = IntField()
-	duration = IntField()
-
-class TransportOverview(EmbeddedDocument):
-	time = EmbeddedDocumentField(TransportTime)
-	price = EmbeddedDocumentField(TransportOverviewPrice)
-	type = StringField()
-	summary = EmbeddedDocumentListField(TransportOverviewSummary)
-
-class TransportDetailsLocation(EmbeddedDocument):
-	start = StringField()
-	end = StringField()
-
-class TransportDetailsSegmentsMainStops(EmbeddedDocument):
-	color = StringField()
-	icon = StringField()
-	name = StringField()
-	location = PointField()
-	type = StringField()
-
-class TransportDetailsSegmentsMainSchedule(EmbeddedDocument):
-	transportName = StringField()
-	transportType = StringField()
-	icon = StringField()
-	color = StringField()
-
-class TransportDetailsSegmentsMain(EmbeddedDocument):
-	stops = EmbeddedDocumentListField(TransportDetailsSegmentsMainStops)
-	schedule = EmbeddedDocumentField(TransportDetailsSegmentsMainSchedule)
-
-class TransportDetailsSegmentsPublic(EmbeddedDocument):
-	time = EmbeddedDocumentField(TransportTime)
-	main = EmbeddedDocumentField(TransportDetailsSegmentsMain)
-
-class TransportDetailsSegmentsWalking(EmbeddedDocument):
-	location = EmbeddedDocumentField(TransportDetailsLocation)
-	distance = IntField()
-	time = EmbeddedDocumentField(TransportTime)
-	main = EmbeddedDocumentField(TransportDetailsSegmentsMain)
-
-class TransportDetailsSegments(EmbeddedDocument):
-	walking = EmbeddedDocumentField(TransportDetailsSegmentsWalking)
-	public = EmbeddedDocumentField(TransportDetailsSegmentsPublic)
-
-class TransportDetails(EmbeddedDocument):
-	location = EmbeddedDocumentField(TransportDetailsLocation)
-	segments = EmbeddedDocumentListField(TransportDetailsSegments)
-
-class Transport(EmbeddedDocument):
-	routeId 	= StringField()
-	overview 	= EmbeddedDocumentField(TransportOverview)
-	details 	= EmbeddedDocumentField(TransportDetails)
-
 class TimeSlot(EmbeddedDocument):
 	description = StringField()
 	start_time 	= StringField()
@@ -268,33 +187,6 @@ class TripPerformed(EmbeddedDocument):
 '''
 ' Documents
 '''
-class Configuration(CustomBaseDocument):
-	# Collection configuration
-	meta = {'collection': 'configurations'}
-
-	# Collection fields
-	key = StringField(required=True)
-	value = DynamicField(required=True)
-	enterprise = ReferenceField('Enterprise')
-
-	def to_json(self, explode_data=True):
-		data = self.to_mongo()
-		data["id"] = str(self.id)
-		del data['_id']
-
-		data["created_at"] = data["created_at"].strftime("%d/%m/%Y %H:%M:%S") if "created_at" in data else None
-		data["deleted_at"] = data["deleted_at"].strftime("%d/%m/%Y %H:%M:%S") if "deleted_at" in data else None
-
-		if not (self.enterprise is None):
-			data['enterprise'] = self.enterprise.to_mongo()
-			data['enterprise']["id"] = str(self.enterprise.id)
-			del data['enterprise']['_id']
-
-			data['enterprise']["created_at"] = data['enterprise']["created_at"].strftime("%d/%m/%Y %H:%M:%S") if "created_at" in data['enterprise'] else None
-			data['enterprise']["deleted_at"] = data['enterprise']["deleted_at"].strftime("%d/%m/%Y %H:%M:%S") if "deleted_at" in data['enterprise'] else None
-
-		return json_util.dumps(data)
-
 class Enterprise(CustomBaseDocument):
 	# Collection configuration
 	meta = {'collection': 'enterprises'}
@@ -2303,43 +2195,3 @@ class VehicleTrakerHistory(CustomBaseDocument):
 
 
 		return json_util.dumps(data, default=None)
-
-class MileageReport(Document):
-	meta = {'collection': 'mileage_reports'}
-
-	enterprise  						= ReferenceField('Enterprise')
-	subenterprise						= ObjectIdField()
-	order                            	= ReferenceField('Order')
-	driver                              = ReferenceField('User')
-	vehicle                             = ReferenceField('Vehicle')
-	route                               = ReferenceField('Route')
-	started_improdutive_time_at        	= DateTimeField()
-	started_travel_at                   = DateTimeField()
-	completed_at                        = DateTimeField()
-	delivered_at                        = DateTimeField()
-	fulfilled_km_improdutive_init    	= FloatField()
-	fulfilled_km_improdutive_end       	= FloatField()
-	fulfilled_km_productive            	= FloatField()
-	provided_km_improdutive_init		= FloatField()
-	provided_km_improdutive_end			= FloatField()
-	provided_km_productive				= FloatField()
-	working_hours                       = StringField()
-	information                         = StringField()
-	direction                           = StringField()
-	scheduled_at 						= DateTimeField()
-	created_at 							= DateTimeField(default=datetime.datetime.now)
-	updated_at 							= DateTimeField()
- 
- 
-class Notification(Document):
-	meta = {'collection': 'notifications'}
-
-	TYPE_CHOICES = (('mileage_report', 'mileage_report'))
- 
-	user 		= ReferenceField(User, required=True)
-	order 		= ReferenceField(Order, required=True)
-	type 		= StringField(choices=TYPE_CHOICES, required=True)
-	title 		= StringField(required=True)
-	body 		= StringField(required=True)
-	read 		= BooleanField(default=False)
-	created_at	= DateTimeField(default=datetime.datetime.now)
