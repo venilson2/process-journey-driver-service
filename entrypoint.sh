@@ -1,8 +1,11 @@
 #!/bin/sh
-while true
-do
-    echo "Start application main.py"
-    python3 main.py
-    echo "Executed application main.py"
-    sleep 60s
-done
+
+run_python_script() {
+    PYTHON_COMMAND="python3 main.py"
+    $PYTHON_COMMAND
+}
+
+# Verifica se é meia-noite (00:00) para executar o script diariamente
+if [ "$(date '+%H:%M')" = "00:00" ]; then
+    run_python_script
+fi

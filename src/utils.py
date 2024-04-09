@@ -1,4 +1,5 @@
 import configparser
+from datetime import datetime
 
 class ConfigPropertiesHelper(object):
 	config = None
@@ -28,3 +29,18 @@ class DateTimeUtils:
         hours = minutes // 60
         minutes_remaining = minutes % 60
         return f"{int(hours):02d}:{int(minutes_remaining):02d}"
+    
+    
+    def calculate_hour_difference(self, hour_start_str, hour_end_str):
+        
+        if hour_start_str is None or hour_end_str is None:
+            return 0
+        
+        hour_start = datetime.strptime(hour_start_str, "%H:%M")
+        hour_end = datetime.strptime(hour_end_str, "%H:%M")
+
+        hour_diff = hour_end - hour_start
+
+        hours_in_minutes = (hour_diff.seconds // 60) % 60
+
+        return hours_in_minutes

@@ -39,22 +39,33 @@ def main(schedule_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
       
 			driver_orders_sorted = sorted(driver_orders, key=lambda x: x.start_time)
    
-			working_day = order_service.process_working_day(driver_orders_sorted)
+			working_day_realized = order_service.process_working_day_realized(driver_orders_sorted)
+   
+			working_day_foreseen = order_service.process_working_day_foreseen(driver_orders_sorted)
    
 			driver = {
 				"driver": driver_id,
-				"realized": {
-					"summary": working_day['summary'],
-					"orders": working_day['orders']
-     			},
+				"working_day": {
+					"realized": {
+						"summary": working_day_realized['summary'],
+						"details": working_day_realized['details']
+     				},
+					"foreseen": {
+						"summary": working_day_foreseen['summary'],
+						"details": working_day_foreseen['details']
+     				}
+				},
 				"orders": list(map(lambda item: 
 				item['id'], 
 				driver_orders))
 			}
+			print(driver)
+			print('\n\n\n')
 			order_service.save_working_day(driver)
 
 		print("Finish application...")
 	except Exception as e:
 		print(f'Error ocurred: {str(e)} on line {sys.exc_info()[-1].tb_lineno}')
+		raise 
 
 main()
