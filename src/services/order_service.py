@@ -82,13 +82,17 @@ class OrderService:
 						on_hold_time += partial_duration
 					else:
 						intra_day += partial_duration
+      
+					if i == len(driver_orders) - 1:
+						intra_day = 0
+						on_hold_time = 0
 		
 				orders.append({
 					"id": current_order['id'],
-					"started_improdutive_time_at": current_order['started_improdutive_time_at'],
-					"started_travel_at": current_order['started_travel_at'],
-					"completed_at": current_order['completed_at'],
-					"delivered_at": current_order['delivered_at'],
+					"start_at": current_order['started_improdutive_time_at'],
+					"first_point_at": current_order['started_travel_at'],
+					"last_point_at": current_order['completed_at'],
+					"end_at": current_order['delivered_at'],
 					"unproductive_time_init": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_init),
 					"unproductive_time_end": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_end),
 					"productive_time": self.date_utils.convert_minute_in_hours(partial_duration_productive_time),
@@ -131,56 +135,57 @@ class OrderService:
 			for i in range(len(driver_orders)): 
 				current_order = driver_orders[i]
 	
-				first_time = current_order['waypoints'][0]['incoming_time'] if current_order['direction'] == 'incomming' else current_order['waypoints'][0]['outcoming_time']
-				last_time = current_order['waypoints'][-1]['outcoming_time'] if current_order['direction'] == 'incomming' else current_order['waypoints'][-1]['incoming_time']
-
 				# Pegada - Inicio
-				partial_duration_unproductive_time_init = self.date_utils.calculate_hour_difference(
-					current_order['start_time'], 
-					first_time
+				partial_duration_unproductive_time_init = self.date_utils.calculate_hour_difference_from_iso_dates(
+					current_order['start_at'], 
+					current_order['waypoints'][0]['scheduled_at']
 				)
 				unproductive_time += partial_duration_unproductive_time_init
 
 				# Finalizada - Largada
-				partial_duration_unproductive_time_end = self.date_utils.calculate_hour_difference(
-					last_time, 
-					current_order['end_time']
+				partial_duration_unproductive_time_end = self.date_utils.calculate_hour_difference_from_iso_dates(
+					current_order['waypoints'][-1]['scheduled_at'], 
+					current_order['end_at']
 				)
 				unproductive_time += partial_duration_unproductive_time_end
 			
 				# Inicio - Finalizada
-				partial_duration_productive_time = self.date_utils.calculate_hour_difference(
-					first_time, 
-					last_time
+				partial_duration_productive_time = self.date_utils.calculate_hour_difference_from_iso_dates(
+					current_order['waypoints'][0]['scheduled_at'],
+					current_order['waypoints'][-1]['scheduled_at']
 				)
 				productive_time += partial_duration_productive_time
 
 				# Pegada - Largada
-				partial_duration_work_time = self.date_utils.calculate_hour_difference(
-					current_order['start_time'],
-					current_order['end_time']
+				partial_duration_work_time = self.date_utils.calculate_hour_difference_from_iso_dates(
+					current_order['start_at'],
+					current_order['end_at']
 				)
 				work_time += partial_duration_work_time
 
 				# Se este não for o último pedido
 				if i < len(driver_orders) - 1:
 					next_order = driver_orders[i + 1]
-					partial_duration = self.date_utils.calculate_hour_difference(
-						next_order['start_time'],
-						current_order['end_time'], 
+					partial_duration = self.date_utils.calculate_hour_difference_from_iso_dates(
+						next_order['start_at'],
+						current_order['end_at'], 
 					)
 		
 					if partial_duration < 60:
 						on_hold_time += partial_duration
 					else:
 						intra_day += partial_duration
-		
+      
+				if i == len(driver_orders) - 1:
+					intra_day = 0
+					on_hold_time = 0
+      
 				orders.append({
 					"id": current_order['id'],
-					"start_time": current_order['start_time'],
-					"first_time": first_time,
-					"last_time": last_time,
-					"end_time": current_order['end_time'],
+					"start_at": current_order['start_at'],
+					"first_point_at": current_order['waypoints'][0]['scheduled_at'],
+					"last_point_at": current_order['waypoints'][-1]['scheduled_at'],
+					"end_at": current_order['end_at'],
 					"unproductive_time_init": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_init),
 					"unproductive_time_end": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_end),
 					"productive_time": self.date_utils.convert_minute_in_hours(partial_duration_productive_time),
