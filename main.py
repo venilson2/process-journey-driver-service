@@ -11,18 +11,18 @@ now_date = datetime.now()
 db_connector = DatabaseConnector()
 order_service = OrderService()
 
-def main(schedule_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
+def main(scheduled_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
 	
 	try:
 		print("Run application...")
 
 		db_connector.connect_database()
 
-		if schedule_at is None:
-			schedule_at = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+		if scheduled_at is None:
+			scheduled_at = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-		yesterday_start_date =	parse(schedule_at + " 00:00")
-		yesterday_end_date 	 = 	parse(schedule_at + " 23:59")
+		yesterday_start_date =	parse(scheduled_at + " 00:00")
+		yesterday_end_date 	 = 	parse(scheduled_at + " 23:59")
 
 		orders = Order.objects(
 			deleted=False,
@@ -45,17 +45,16 @@ def main(schedule_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
    
 			driver = {
 				"driver": driver_id,
-				"realized": {
+				"scheduled_at": scheduled_at,
+				"enterprise": enterprise_id,
+				"accomplished": {
 					"summary": working_day_realized['summary'],
 					"details": working_day_realized['details']
 				},
 				"foreseen": {
 					"summary": working_day_foreseen['summary'],
 					"details": working_day_foreseen['details']
-				},
-				"orders": list(map(lambda item: 
-				item['id'], 
-				driver_orders))
+				}
 			}
 			order_service.save_working_day(driver)
 
@@ -64,4 +63,4 @@ def main(schedule_at=None, enterprise_id="5e837a4a30fc256f5c3ad716"):
 		print(f'Error ocurred: {str(e)} on line {sys.exc_info()[-1].tb_lineno}')
 		raise 
 
-main()
+main("2024-04-07T00:00:00.000Z")

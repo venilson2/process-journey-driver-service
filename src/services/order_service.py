@@ -30,7 +30,7 @@ class OrderService:
 		except Exception as e:
 			print(f'Error ocurred: {str(e)} on line {sys.exc_info()[-1].tb_lineno}')
 			raise  
- 
+
 	def process_working_day_realized(self, driver_orders):
 		try:
 			work_time = 0
@@ -92,13 +92,20 @@ class OrderService:
 					if i == len(driver_orders) - 1:
 						intra_day = 0
 						on_hold_time = 0
-		
+      
 				orders.append({
 					"id": current_order['id'],
 					"start_at": current_order['started_improdutive_time_at'],
 					"first_point_at": current_order['started_travel_at'],
 					"last_point_at": current_order['completed_at'],
 					"end_at": current_order['delivered_at'],
+					"direction": current_order['direction'],
+					"route": {
+						"id": current_order['route']['id'],
+						"description": current_order['route']['description'],
+						"color": current_order['route']['color'],
+						"subenterprise": current_order['route']['subenterprise']['id']
+					},
 					"unproductive_time_init": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_init),
 					"unproductive_time_end": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_end),
 					"productive_time": self.date_utils.convert_minute_in_hours(partial_duration_productive_time),
@@ -192,6 +199,13 @@ class OrderService:
 					"first_point_at": current_order['waypoints'][0]['scheduled_at'],
 					"last_point_at": current_order['waypoints'][-1]['scheduled_at'],
 					"end_at": current_order['end_at'],
+					"direction": current_order['direction'],
+					"route": {
+						"id": current_order['route']['id'],
+						"description": current_order['route']['description'],
+						"color": current_order['route']['color'],
+						"subenterprise": current_order['route']['subenterprise']['id']
+					},
 					"unproductive_time_init": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_init),
 					"unproductive_time_end": self.date_utils.convert_minute_in_hours(partial_duration_unproductive_time_end),
 					"productive_time": self.date_utils.convert_minute_in_hours(partial_duration_productive_time),
